@@ -16,6 +16,14 @@ class ViewController: UIViewController {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
+    
+    private lazy var headerView: UIView = {
+        let view = UIView(frame: .zero)
+        view.backgroundColor = .white
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.layer.cornerRadius = 20
+        return view
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,14 +31,13 @@ class ViewController: UIViewController {
     }
     
     private func setupView() {
-        view.backgroundColor = .red
-        
         setHierarchy()
         setConstraints()
     }
     
     private func setHierarchy() {
         view.addSubview(backgroundView)
+        view.addSubview(headerView)
     }
     
     private func setConstraints() {
@@ -39,6 +46,13 @@ class ViewController: UIViewController {
             backgroundView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             backgroundView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             backgroundView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        NSLayoutConstraint.activate([
+            headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 60),
+            headerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 35),
+            headerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -35),
+            headerView.heightAnchor.constraint(equalToConstant: 169)
         ])
     }
 }
