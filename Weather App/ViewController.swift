@@ -11,7 +11,6 @@ class ViewController: UIViewController {
     
     private lazy var backgroundView: UIImageView = {
         let imageView = UIImageView(frame: .zero)
-        imageView.image = UIImage(named: "background")
         imageView.contentMode = .scaleAspectFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
@@ -31,7 +30,6 @@ class ViewController: UIViewController {
         label.font = UIFont.systemFont(ofSize: 20)
         label.textAlignment = .center
         label.textColor = UIColor.primaryColor
-        label.text = "João Pessoa"
         return label
     }()
     
@@ -41,14 +39,12 @@ class ViewController: UIViewController {
         label.font = UIFont.systemFont(ofSize: 70, weight: .bold)
         label.textAlignment = .left
         label.textColor = UIColor.primaryColor
-        label.text = "25°C"
         return label
     }()
     
     private lazy var weatherIcon: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.image = UIImage(named: "sunIco")
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -56,8 +52,8 @@ class ViewController: UIViewController {
     private lazy var humidityLabel: UILabel = {
         let label = UILabel(frame: .zero)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Humidity"
         label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        label.text = "Humidity: "
         label.textColor = UIColor.contrastColor
         return label
     }()
@@ -65,7 +61,6 @@ class ViewController: UIViewController {
     private lazy var humidityValueLabel: UILabel = {
         let label = UILabel(frame: .zero)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "1000mm"
         label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
         label.textColor = UIColor.contrastColor
         return label
@@ -81,8 +76,8 @@ class ViewController: UIViewController {
     private lazy var windLabel: UILabel = {
         let label = UILabel(frame: .zero)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Wind"
         label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
+        label.text = "Wind speed: "
         label.textColor = UIColor.contrastColor
         return label
     }()
@@ -90,7 +85,6 @@ class ViewController: UIViewController {
     private lazy var windValueLabel: UILabel = {
         let label = UILabel(frame: .zero)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "10km/h"
         label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
         label.textColor = UIColor.contrastColor
         return label
@@ -156,12 +150,44 @@ class ViewController: UIViewController {
         tableView.dataSource = self
         tableView.register(DailyForecastTableViewCell.self, forCellReuseIdentifier: DailyForecastTableViewCell.indentifier)
         tableView.separatorColor = UIColor.contrastColor
+        tableView.delegate = self
         return tableView
     }()
+    
+    private let service = Service()
+    private let city = City(lat: "-23.6814346", lon: "-46.9249599", name: "São Paulo")
+    private var forecastResponse: ForecastResponse?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
+        fetchData()
+    }
+    
+    private func fetchData() {
+        service.fecthData(city: city) { [weak self] response in
+            self?.forecastResponse = response
+            DispatchQueue.main.async {
+                self?.loadData()
+            }
+        }
+    }
+    
+    private func loadData() {
+        if forecastResponse?.current.dt.isDayTime() ?? true {
+            backgroundView.image = UIImage(named: "background-day")
+        } else {
+            backgroundView.image = UIImage(named: "background-night")
+        }
+        
+        cityLabel.text = city.name
+        tempLabel.text = forecastResponse?.current.temp.toCelsius()
+        weatherIcon.image = UIImage(named: forecastResponse?.current.weather.first?.icon ?? "")
+        humidityValueLabel.text = "\(forecastResponse?.current.humidity ?? 0) mm"
+        windValueLabel.text = "\(forecastResponse?.current.windSpeed ?? 0) Km/h"
+        
+        hourlyCollectionView.reloadData()
+        dailyForecastTableView.reloadData()
     }
     
     private func setupView() {
@@ -204,12 +230,13 @@ class ViewController: UIViewController {
             cityLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -15),
             cityLabel.heightAnchor.constraint(equalToConstant: 20),
             tempLabel.topAnchor.constraint(equalTo: cityLabel.bottomAnchor, constant: 12),
-            tempLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 26),
+            tempLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 18),
+            tempLabel.heightAnchor.constraint(equalToConstant: 71),
             weatherIcon.heightAnchor.constraint(equalToConstant: 86),
             weatherIcon.widthAnchor.constraint(equalToConstant: 86),
             weatherIcon.centerYAnchor.constraint(equalTo: tempLabel.centerYAnchor),
-            weatherIcon.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -26),
-            weatherIcon.leadingAnchor.constraint(equalTo: tempLabel.trailingAnchor, constant: 15)
+            weatherIcon.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -18),
+            weatherIcon.leadingAnchor.constraint(equalTo: tempLabel.trailingAnchor, constant: 8)
         ])
         
         NSLayoutConstraint.activate([
@@ -248,26 +275,46 @@ class ViewController: UIViewController {
 
 extension ViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 10
+        forecastResponse?.hourly.count ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HourlyForecastCollectionViewCell.indentifier, for: indexPath)
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HourlyForecastCollectionViewCell.indentifier, for: indexPath) as? HourlyForecastCollectionViewCell else {
+            return UICollectionViewCell()
+        }
+        
+        let forecast = forecastResponse?.hourly[indexPath.row]
+        
+        cell.loadData(time: forecast?.dt.toHourFormat(),
+                    icon: UIImage(named: forecast?.weather.first?.icon ?? ""),
+                    temp: forecast?.temp.toCelsius())
         
         return cell
     }
 }
 
-extension ViewController: UITableViewDataSource {
+extension ViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
+        forecastResponse?.daily.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: DailyForecastTableViewCell.indentifier, for: indexPath)
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: DailyForecastTableViewCell.indentifier, for: indexPath) as? DailyForecastTableViewCell else {
+            return UITableViewCell()
+        }
+        
+        let forecast = forecastResponse?.daily[indexPath.row]
+        cell.loadData(weekDay: forecast?.dt.toWeekdayName().uppercased(),
+                      min: forecast?.temp.min.toCelsius(),
+                      max: forecast?.temp.max.toCelsius(),
+                      icon: UIImage(named: forecast?.weather.first?.icon ?? ""))
+        
         return cell
     }
     
-    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) ->
+        CGFloat {
+            60
+        }
 }
 
