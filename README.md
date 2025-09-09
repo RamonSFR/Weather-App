@@ -2,33 +2,43 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/swift-F54A2A?style=for-the-badge&logo=swift&logoColor=white"/>
-</center>
+</p>
 
 A simple and elegant iOS weather application built with **Swift** and **UIKit**
 The app fetches real-time weather data using OpenWeatherMap API and displays it in a clean, user-friendly interface.
 
+<p id="images" align="center">
+  <img src="https://github.com/RamonSFR/Weather-App/blob/main/Weather%20App/Assets.xcassets/screenshots/weather-app-screenshot-1.imageset/weather-app-screenshot-1.png?raw=true" 
+       alt="app screenshot" 
+       height="350px" />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="https://github.com/RamonSFR/Weather-App/blob/main/Weather%20App/Assets.xcassets/screenshots/weather-app-screenshot-2.imageset/weather-app-screenshot-2.png?raw=true" 
+       alt="app screenshot" 
+       height="350px" />
+</p>
+
+
+
 ---
 
-## ✨ Features
+## Features
 
-- 🌍 Search weather by city or current location  
-- ☀️ Display current temperature, conditions, humidity, and wind speed  
-- 📍 Location-based weather detection using CoreLocation  
-- 🌡️ Daily and hourly forecasts  
-- 🎨 Minimal, responsive UI with light/dark mode support  
-- 📊 Dynamic icons and backgrounds based on weather conditions
+- Display current temperature, conditions, humidity, and wind speed  
+- Daily and hourly forecasts  
+- Minimal, responsive UI with light/dark mode deppending on current time
+- Dynamic icons and backgrounds based on weather conditions
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Language:** Swift  
-- **UI Framework:** UIKit  
+- **UI Framework:** UIKit
 - **API:** OpenWeatherMap
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Pre-requisites
 - Xcode (latest version recommended) 
@@ -49,7 +59,7 @@ The app fetches real-time weather data using OpenWeatherMap API and displays it 
    ```
    
 3. Add Your API Key:
-   * Open Constants.swift
+   * Open Service.swift
    * Replace YOUR_API_KEY_HERE with your actual key
      
 4. Build and run the App
