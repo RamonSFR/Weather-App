@@ -49,7 +49,7 @@ The app fetches real-time weather data using OpenWeatherMap API and displays it 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/WeatherApp.git
+   git clone https://github.com/RamonSFR/Weather-App.git
    ```
 
 2. Open the project on Xcode:
